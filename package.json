@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@nodegui/nodegui": "^0.58.0"
+  }
+}
