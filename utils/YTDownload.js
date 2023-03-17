@@ -11,24 +11,23 @@ async function YTdownload(link, output, format) {
 
         if (format === "mp3") {
             console.log("Download and convert to mp3")
-            ffmpeg(stream)
+            await ffmpeg(stream)
                 .audioCodec('libmp3lame')
                 .audioBitrate(128)
                 .format('mp3')
                 .on('error', (err) => console.error(err))
                 .on('end', () => console.log('Finished!'))
                 .on("progress", (per) => { console.log(per) })
-                .output(fileName.toString(), {
+                .save(fileName, {
                     end: true
-                }).run()
+                })
         }
         else if (format === "mp4") {
             const file = fs.createWriteStream(fileName);
-            stream.on("data", (chunk) => {
+            await stream.on("data", (chunk) => {
                 file.write(chunk);
             })
 
-            file.close();
         }
     }
     catch (e) {

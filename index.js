@@ -37,12 +37,8 @@ if (isYoutubeUrl(input)) {
 }
 else if (!fs.existsSync(input) && url === null) {
     console.error(`Input file ${inputFile} does not exist`);
-
     process.exit(1);
-} else {
-    urls = readLines(input);
 }
-
 
 // Check if the output directory exists, create it if it doesn't
 const outputDir = argv.output;
@@ -52,10 +48,24 @@ if (!fs.existsSync(outputDir)) {
 
 // Convert the input file to the specified format and save it to the output directory
 const outputFormat = argv.format;
+if (urls === null)
+    fs.readFile(input, 'utf8', (error, data) => {
 
-urls.forEach((url) => {
-    YTDownload.YTdownload(url, outputDir, outputFormat);
-})
+        if (error) {
+            console.error(error);
+        } else {
+            urls = data.split('/n');
+            console.log(urls);
+            urls.forEach((url) => {
+                YTDownload.YTdownload(url, outputDir, outputFormat);
+            })
+        }
+    });
+else {
+    urls.forEach((url) => {
+        YTDownload.YTdownload(url, outputDir, outputFormat);
+    })
+}
 
 
 function isYoutubeUrl(url) {
@@ -65,25 +75,4 @@ function isYoutubeUrl(url) {
 
 
 
-async function readLines(filename) {
-    const fileStream = fs.createReadStream(filename);
 
-    const lines = [];
-    const lineReader = require('readline').createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-
-    lineReader.on('line', (line) => {
-        // Add the line to the array
-        lines.push(line);
-    });
-
-    return await new Promise((resolve, reject) => {
-        lineReader.on('close', () => {
-            // Return the array of lines when the file has been fully read
-            resolve(lines);
-        });
-        lineReader.on('error', reject);
-    });
-}
