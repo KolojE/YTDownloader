@@ -1,7 +1,7 @@
 const yargs = require("yargs");
 const fs = require("fs");
 const YTDownload = require("./utils/YTDownload");
-const { array } = require("yargs");
+
 const argv = yargs
     .option('input', {
         alias: '-i',
@@ -32,13 +32,6 @@ if (input === undefined) {
 
 let urls = null;
 
-if (isYoutubeUrl(input)) {
-    urls = new Array(input);
-}
-else if (!fs.existsSync(input) && url === null) {
-    console.error(`Input file ${inputFile} does not exist`);
-    process.exit(1);
-}
 
 // Check if the output directory exists, create it if it doesn't
 const outputDir = argv.output;
@@ -46,25 +39,22 @@ if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
 }
 
-// Convert the input file to the specified format and save it to the output directory
 const outputFormat = argv.format;
-if (urls === null)
-    fs.readFile(input, 'utf8', (error, data) => {
 
-        if (error) {
-            console.error(error);
-        } else {
-            urls = data.split('/n');
-            console.log(urls);
-            urls.forEach((url) => {
-                YTDownload.YTdownload(url, outputDir, outputFormat);
-            })
-        }
-    });
-else {
-    urls.forEach((url) => {
-        YTDownload.YTdownload(url, outputDir, outputFormat);
-    })
+
+
+if (isYoutubeUrl(input)) {
+    YTDownload.YTdownload(input, outputDir, outputFormat)
+}
+else if (!fs.existsSync(input) && url === null) {
+    console.error(`Input file ${inputFile} does not exist`);
+    process.exit(1);
+} else {
+    var inputs = fs.readFileSync(input).toString().split("\n");
+    for (i in inputs) {
+        console.log(inputs[i])
+        YTDownload.YTdownload(inputs[i], outputDir, outputFormat);
+    }
 }
 
 

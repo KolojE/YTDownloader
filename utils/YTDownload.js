@@ -4,16 +4,17 @@ const fs = require("fs");
 
 async function YTdownload(link, output, format) {
     try {
+
         const info = await ytdl.getInfo(link);
         const videoTitle = info.videoDetails.title.replaceAll('/', '');
         const fileName = `${output}/${videoTitle}.${format}`;
-        const stream = ytdl(link, { filter: format === "mp3" ? "audioonly" : "", dlchunks: "8MB" });
+        const stream = await ytdl(link, { filter: format === "mp3" ? "audioonly" : "audioandvideo", dlchunks: "8MB" });
 
         if (format === "mp3") {
             console.log("Download and convert to mp3")
-            await ffmpeg(stream)
+            ffmpeg(stream)
                 .audioCodec('libmp3lame')
-                .audioBitrate(128)
+                .audioBitrate(320)
                 .format('mp3')
                 .on('error', (err) => console.error(err))
                 .on('end', () => console.log('Finished!'))
@@ -23,15 +24,19 @@ async function YTdownload(link, output, format) {
                 })
         }
         else if (format === "mp4") {
+            console.log(fileName)
             const file = fs.createWriteStream(fileName);
-            await stream.on("data", (chunk) => {
+            stream.on("data", (chunk) => {
                 file.write(chunk);
+            })
+            stream.on("end", () => {
+                file.close();
             })
 
         }
     }
     catch (e) {
-        console.log(e);
+        console.error(e);
     }
 }
 
